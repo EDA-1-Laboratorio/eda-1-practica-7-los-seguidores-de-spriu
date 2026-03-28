@@ -85,27 +85,53 @@ void liberar_lista(ErrorLog *cabeza)
  *
  * Inserta 'nuevo' en la lista apuntada por *cabeza de forma que la lista
  * se mantenga ordenada:
- *   - Primero por la letra inicial del ID (A < B < C < ...)
- *   - Si dos errores comparten la misma letra, el de MAYOR prioridad
- *     va primero.
+ * - Primero por la letra inicial del ID (A < B < C < ...)
+ * - Si dos errores comparten la misma letra, el de MAYOR prioridad
+ * va primero.
  *
  * Pista: recorre la lista buscando la posicion correcta. Necesitaras un
  * puntero al nodo anterior para reconectar los enlaces.
  */
 void insertar_ordenado(ErrorLog **cabeza, ErrorLog *nuevo)
 {
-    /* ESCRIBE TU CODIGO AQUI */
+   /* ESCRIBE TU CODIGO AQUI */
+    ErrorLog *ahora= *cabeza;
+    ErrorLog *antes= NULL;
+
+    while (ahora != NULL) {
+        if (nuevo->id[0]< ahora->id[0]) {
+        break; 
+        } else if (nuevo->id[0]== ahora->id[0]) {
+            if (nuevo->prioridad> ahora->prioridad) {
+            break;
+            }
+        }
+        antes=ahora;
+        ahora=ahora->sig;
+    }
+
+    nuevo->sig=ahora;
+    if (antes==NULL) {
+    *cabeza=nuevo;
+    }else{
+    antes->sig= nuevo;
+    }
 }
 
-/*
- * TODO: Implementar contar_criticos
- *
- * Recorre la lista y cuenta los nodos cuyo campo es_critico sea 1.
- */
+// * TODO: Implementar contar_criticos
+// Recorre la lista y cuenta los nodos cuyo campo es_critico sea 1.
 int contar_criticos(ErrorLog *cabeza)
 {
     /* ESCRIBE TU CODIGO AQUI */
-    return 0;
+    int todo= 0;
+    ErrorLog *ahora= cabeza;
+    while (ahora != NULL) {
+        if (ahora->es_critico == 1) {
+        todo=todo+1;
+        }
+        ahora=ahora->sig;
+    }
+    return todo; 
 }
 
 /*
@@ -116,7 +142,15 @@ int contar_criticos(ErrorLog *cabeza)
 int contar_no_criticos(ErrorLog *cabeza)
 {
     /* ESCRIBE TU CODIGO AQUI */
-    return 0;
+    int todo= 0;
+    ErrorLog *ahora=cabeza;
+    while (ahora != NULL) {
+    if (ahora->es_critico == 0) {
+        todo=todo+1;
+        }
+        ahora=ahora->sig;
+    }
+    return todo;
 }
 
 /*
@@ -130,6 +164,26 @@ int contar_no_criticos(ErrorLog *cabeza)
 ErrorLog *eliminar_por_prioridad(ErrorLog *cabeza, float umbral)
 {
     /* ESCRIBE TU CODIGO AQUI */
+    ErrorLog *ahora=cabeza;
+    ErrorLog *antes= NULL;
+
+    while (ahora != NULL) {
+        if (ahora->prioridad<umbral) {
+            ErrorLog *borrar= ahora;
+            if (antes== NULL) {
+                cabeza= ahora->sig;
+                ahora= cabeza;
+            }else{
+                antes->sig= ahora->sig;
+                ahora= antes->sig;
+            }
+            free(borrar);
+            borrar=NULL;
+        }else{
+            antes=ahora;
+            ahora=ahora->sig;
+        }
+    }
     return cabeza;
 }
 
@@ -147,6 +201,42 @@ ErrorLog *eliminar_por_prioridad(ErrorLog *cabeza, float umbral)
 ErrorLog *conservar_mayor_no_critico(ErrorLog *cabeza)
 {
     /* ESCRIBE TU CODIGO AQUI */
+    if (cabeza==NULL) return cabeza;
+    ErrorLog *ahora= cabeza;
+    ErrorLog *antes= NULL;
+    ErrorLog *el_mejor= NULL;
+    float max_prioridad= -1.0;
+
+    while (ahora != NULL) {
+        if (ahora->es_critico== 0 && ahora->prioridad> max_prioridad) {
+            max_prioridad=ahora->prioridad;
+            el_mejor=ahora;
+        }
+        ahora=ahora->sig;
+    }
+
+    if (el_mejor != NULL) {
+        ahora = cabeza;
+        antes = NULL;
+        while (ahora != NULL) {
+            if (ahora->es_critico== 0 && ahora != el_mejor) {
+                ErrorLog *borrar= ahora;
+                if (antes==NULL){
+                    cabeza=ahora->sig;
+                    ahora= cabeza;
+                }else{
+                    antes->sig=ahora->sig;
+                    ahora=antes->sig;
+                }
+                free(borrar);
+                borrar= NULL;
+
+            } else {
+                antes=ahora;
+                ahora=ahora->sig;
+            }
+        }
+    }
     return cabeza;
 }
 
